@@ -427,6 +427,21 @@ function Scene({ model, animations, lightProperties, sceneProperties, isAnimatio
         mesh.material.depthWrite = value >= 1; // Disable depth write for transparent objects
       });
 
+      const positionFolder = meshFolder.addFolder('Position');
+      positionFolder.add(selectedMesh.position, 'x', -50, 50).name('X');
+      positionFolder.add(selectedMesh.position, 'y', -50, 50).name('Y');
+      positionFolder.add(selectedMesh.position, 'z', -50, 50).name('Z');
+      
+      const rotationFolder = meshFolder.addFolder('Rotation');
+      rotationFolder.add(selectedMesh.rotation, 'x', -Math.PI, Math.PI).name('X');
+      rotationFolder.add(selectedMesh.rotation, 'y', -Math.PI, Math.PI).name('Y');
+      rotationFolder.add(selectedMesh.rotation, 'z', -Math.PI, Math.PI).name('Z');
+      
+      const scaleFolder = meshFolder.addFolder('Scale');
+      scaleFolder.add(selectedMesh.scale, 'x', 0.1, 10).name('X');
+      scaleFolder.add(selectedMesh.scale, 'y', 0.1, 10).name('Y');
+      scaleFolder.add(selectedMesh.scale, 'z', 0.1, 10).name('Z');
+
       const infoFolder = meshFolder.addFolder('Mesh Info');
       infoFolder.add({ Vertices: vertexCount }, 'Vertices').name('Vertices').listen();
       infoFolder.add({ Edges: edgeCount }, 'Edges').name('Edges').listen();
