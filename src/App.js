@@ -4,7 +4,7 @@ import { Stats, OrbitControls } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
 import * as dat from 'dat.gui';
-import { Raycaster, Vector2, AnimationMixer } from 'three';
+import { Raycaster, Vector2, AnimationMixer, Box3, Vector3 } from 'three';
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, listAll, getDownloadURL, uploadBytes } from 'firebase/storage';
 import './App.css';
@@ -42,13 +42,14 @@ function App() {
   const [firebaseFiles, setFirebaseFiles] = useState([]);
   const [selectedFile, setSelectedFile] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isAnimationPlaying, setIsAnimationPlaying] = useState(true);
   const guiRef = useRef(null);
 
   useEffect(() => {
     const gui = new dat.GUI();
 
     const lightFolder = gui.addFolder('Light Properties');
-    lightFolder.add(lightProperties, 'type', ['ambientLight', 'directionalLight']).name('Type').onChange((value) => {
+    lightFolder.add(lightProperties, 'type', ['ambientLight', 'directionalLight', 'pointLight', 'spotLight']).name('Type').onChange((value) => {
       setLightProperties((prev) => ({ ...prev, type: value }));
     });
     lightFolder.addColor(lightProperties, 'color').name('Color').onChange((value) => {
@@ -178,14 +179,14 @@ function App() {
         async (result) => {
           const output = JSON.stringify(result, null, 2);
           const blob = new Blob([output], { type: 'application/json' });
-  
+
           let fileName = window.prompt('Enter a name for the file (without extension):');
           if (!fileName) {
             fileName = 'model'; // Default filename if user cancels prompt
           }
-  
+
           fileName += '.gltf'; // Ensure the filename ends with .gltf
-  
+
           const storageRef = ref(storage, fileName);
           await uploadBytes(storageRef, blob);
           alert(`Model "${fileName}" uploaded to Firebase successfully!`);
@@ -193,7 +194,7 @@ function App() {
         { binary: false }
       );
     }
-  };  
+  };
 
   useEffect(() => {
     loadFirebaseFiles();
@@ -205,42 +206,52 @@ function App() {
     handleFirebaseFileUpload(selectedFile.url);
   };
 
+  const toggleAnimation = () => {
+    setIsAnimationPlaying(!isAnimationPlaying);
+  };
+
   return (
     <>
       <input
         type="file"
         onChange={handleFileUpload}
-        style={{ fontSize: '18px', padding: '10px' }}
+        style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}
       />
-      <h2>OR</h2>
-      <label>Choose a model:</label>
       <select
-        onChange={handleSelectChange}
         value={selectedFile ? selectedFile.name : ''}
-        style={{ fontSize: '18px', padding: '10px' }}
+        onChange={handleSelectChange}
+        style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}
       >
         <option value="">Select a file from Firebase</option>
-        {firebaseFiles.map((file, index) => (
-          <option key={index} value={file.name}>{file.name}</option>
+        {firebaseFiles.map(file => (
+          <option key={file.name} value={file.name}>{file.name}</option>
         ))}
       </select>
-      <button
-        onClick={handleExportToLocal}
-        style={{ fontSize: '18px', padding: '10px', marginTop: '10px' }}
-      >
+      <br></br>
+      <button onClick={handleExportToLocal} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}>
         Export to Local
       </button>
-      <button
-        onClick={handleExportToFirebase}
-        style={{ fontSize: '18px', padding: '10px', marginTop: '10px' }}
-      >
+      <button onClick={handleExportToFirebase} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}>
         Export to Firebase
       </button>
-      {loading && <div>Loading model...</div>}
-      <Canvas camera={{ position: [-8, 5, 8] }} style={{ background: sceneProperties.backgroundColor }}>
-        <Scene model={model} animations={animations} lightProperties={lightProperties} sceneProperties={sceneProperties} />
+      <br></br>
+      <button onClick={toggleAnimation} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}>
+        {isAnimationPlaying ? 'Pause Animation' : 'Play Animation'}
+      </button>
+      {loading && <p>Loading...</p>}
+      <Canvas style={{ height: 'calc(100vh - 120px)', width: '100%', background: sceneProperties.backgroundColor }}>
+        <Stats className='stats' />
         <OrbitControls autoRotate={sceneProperties.autoRotate} />
-        <Stats showPanel={0} className="stats" />
+        <ambientLight intensity={0.5} />
+        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+        <pointLight position={[-10, -10, -10]} />
+        <Scene
+          model={model}
+          animations={animations}
+          lightProperties={lightProperties}
+          sceneProperties={sceneProperties}
+          isAnimationPlaying={isAnimationPlaying}
+        />
       </Canvas>
     </>
   );
@@ -310,8 +321,8 @@ function HoverHighlight({ setHoveredObject, setSelectedObject }) {
   return null;
 }
 
-function Scene({ model, animations, lightProperties, sceneProperties }) {
-  const { scene } = useThree();
+function Scene({ model, animations, lightProperties, sceneProperties, isAnimationPlaying }) {
+  const { scene, camera, gl } = useThree();
   const [selectedMesh, setSelectedMesh] = useState(null);
   const [hoveredMesh, setHoveredMesh] = useState(null);
   const guiRef = useRef(null);
@@ -356,8 +367,27 @@ function Scene({ model, animations, lightProperties, sceneProperties }) {
     }
   }, [model, sceneProperties.wireframe]);
 
+  // Adjust camera position to fit model in the viewport
+  useEffect(() => {
+    if (model) {
+      const box = new Box3().setFromObject(model);
+      const size = box.getSize(new Vector3()).length();
+      const center = box.getCenter(new Vector3());
+
+      // Set camera position based on bounding box and size of the model
+      const cameraOffset = 1.5;
+      const cameraPosition = new Vector3().copy(center);
+      cameraPosition.x += size / 2.0;
+      cameraPosition.y += size / 4.0;
+      cameraPosition.z += size * cameraOffset;
+
+      camera.position.copy(cameraPosition);
+      camera.lookAt(center);
+    }
+  }, [model, camera]);
+
   useFrame((state, delta) => {
-    if (mixer.current) {
+    if (mixer.current && isAnimationPlaying) {
       mixer.current.update(delta);
     }
   });
@@ -388,10 +418,13 @@ function Scene({ model, animations, lightProperties, sceneProperties }) {
       });
 
       meshFolder.add(mesh.material, 'wireframe').name('Wireframe');
-      meshFolder.add(mesh.material, 'transparent').name('Transparent');
+      meshFolder.add(mesh.material, 'transparent').name('Transparent').onChange((value) => {
+        mesh.material.transparent = value;
+      });
       meshFolder.add(mesh.material, 'opacity', 0, 1).name('Opacity').onChange((value) => {
         mesh.material.transparent = value < 1;
         mesh.material.opacity = value;
+        mesh.material.depthWrite = value >= 1; // Disable depth write for transparent objects
       });
 
       const infoFolder = meshFolder.addFolder('Mesh Info');
@@ -403,18 +436,34 @@ function Scene({ model, animations, lightProperties, sceneProperties }) {
     }
   };
 
+
   return (
     <>
       <HoverHighlight setHoveredObject={setHoveredMesh} setSelectedObject={setSelectedMesh} />
       {lightProperties.type === 'ambientLight' ? (
         <ambientLight intensity={lightProperties.intensity} color={lightProperties.color} />
-      ) : (
+      ) : lightProperties.type === 'directionalLight' ? (
         <directionalLight
           intensity={lightProperties.intensity}
           color={lightProperties.color}
           position={[lightProperties.position.x, lightProperties.position.y, lightProperties.position.z]}
         />
-      )}
+      ) : lightProperties.type === 'pointLight' ? (
+        <pointLight
+          intensity={lightProperties.intensity}
+          color={lightProperties.color}
+          position={[lightProperties.position.x, lightProperties.position.y, lightProperties.position.z]}
+        />
+      ) : lightProperties.type === 'spotLight' ? (
+        <spotLight
+          intensity={lightProperties.intensity}
+          color={lightProperties.color}
+          position={[lightProperties.position.x, lightProperties.position.y, lightProperties.position.z]}
+          angle={Math.PI / 5}
+          penumbra={0.2}
+          castShadow
+        />
+      ) : null}
       {sceneProperties.showGrid && (
         <gridHelper args={[sceneProperties.gridSize, sceneProperties.gridDivisions]} />
       )}
@@ -422,4 +471,5 @@ function Scene({ model, animations, lightProperties, sceneProperties }) {
   );
 }
 
-export default App;
+
+export default App; 
