@@ -43,6 +43,7 @@ function App() {
   const [selectedFile, setSelectedFile] = useState('');
   const [loading, setLoading] = useState(false);
   const [isAnimationPlaying, setIsAnimationPlaying] = useState(true);
+  const [modelDimensions, setModelDimensions] = useState({ width: 0, height: 0, depth: 0 });
   const guiRef = useRef(null);
 
   useEffect(() => {
@@ -90,6 +91,12 @@ function App() {
       setSceneProperties((prev) => ({ ...prev, gridDivisions: value }));
     });
 
+    const dimensionsFolder = gui.addFolder('Dimensions');
+    const modelDimensionsController = dimensionsFolder;
+    modelDimensionsController.add(modelDimensions, 'width').name('Width').listen();
+    modelDimensionsController.add(modelDimensions, 'height').name('Height').listen();
+    modelDimensionsController.add(modelDimensions, 'depth').name('Depth').listen();
+
     const meshFolder = gui.addFolder('Mesh Hierarchy');
 
     const printMeshHierarchy = (object, folder) => {
@@ -120,6 +127,7 @@ function App() {
     loader.load(URL.createObjectURL(file), (gltf) => {
       setModel(gltf.scene);
       setAnimations(gltf.animations);
+      updateModelDimensions(gltf.scene);
     });
   };
 
@@ -131,6 +139,7 @@ function App() {
       (gltf) => {
         setModel(gltf.scene);
         setAnimations(gltf.animations);
+        updateModelDimensions(gltf.scene);
         setLoading(false);
       },
       undefined,
@@ -210,6 +219,21 @@ function App() {
     setIsAnimationPlaying(!isAnimationPlaying);
   };
 
+  const updateModelDimensions = (loadedModel) => {
+    if (loadedModel) {
+      const box = new Box3().setFromObject(loadedModel);
+      const size = box.getSize(new Vector3());
+      const dimensions = {
+        width: size.x.toFixed(2),
+        height: size.y.toFixed(2),
+        depth: size.z.toFixed(2),
+      };
+      setModelDimensions(dimensions);
+      console.log('Model Dimensions:', dimensions);
+    }
+  };
+  
+
   return (
     <>
       <input
@@ -220,7 +244,7 @@ function App() {
       <select
         value={selectedFile ? selectedFile.name : ''}
         onChange={handleSelectChange}
-        style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}
+        style={{ fontSize: '18px', padding: '10px', marginBottom: '20px', color: 'black', backgroundColor: '#61dafb', cursor:'pointer' }}
       >
         <option value="">Select a file from Firebase</option>
         {firebaseFiles.map(file => (
