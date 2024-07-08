@@ -1,3 +1,4 @@
+/* Reset some basic styles */
 * {
   box-sizing: border-box;
 }
@@ -26,10 +27,10 @@ body {
   position: fixed;
   overflow: hidden;
   overscroll-behavior-y: none;
-  font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+  font-family: 'Roboto', sans-serif;
   color: black;
   -webkit-font-smoothing: antialiased;
-  background: #f0f0f0;
+  background: #282c34;
 }
 
 .stats {
@@ -37,4 +38,42 @@ body {
   left: unset !important;
   right: 0 !important;
   bottom: 0 !important;
+}
+
+button, select, input[type="file"] {
+  font-size: 18px;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #61dafb;
+  color: #282c34;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover, select:hover, input[type="file"]:hover {
+  background-color: #21a1f1;
+}
+
+button:active, select:active, input[type="file"]:active {
+  background-color: #1e90ff;
+}
+
+button:disabled, select:disabled, input[type="file"]:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+canvas {
+  display: block;
+  background: #f4f2f2;
+}
+
+/* Add some padding and a max-width to center the UI elements */
+.container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
 }
