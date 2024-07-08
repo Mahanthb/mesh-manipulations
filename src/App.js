@@ -7,7 +7,7 @@ import * as dat from 'dat.gui';
 import { Raycaster, Vector2, AnimationMixer, Box3, Vector3 } from 'three';
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, listAll, getDownloadURL, uploadBytes } from 'firebase/storage';
-import { FaUpload, FaDownload, FaCloudUploadAlt, FaPlay, FaPause } from 'react-icons/fa';
+import { FaDownload, FaCloudUploadAlt, FaPlay, FaPause } from 'react-icons/fa';
 import './App.css';
 
 const firebaseConfig = {
@@ -243,30 +243,29 @@ function App() {
         style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}
       />
 
-<select
-  value={selectedFile ? selectedFile.name : ''}
-  onChange={handleSelectChange}
-  style={{ fontSize: '18px', padding: '10px', marginBottom: '20px', color: 'black', backgroundColor: '#61dafb', cursor: 'pointer' }}
->
-  <option value="">Select a file from Firebase</option>
-  {firebaseFiles.map(file => (
-    <option key={file.name} value={file.name}>{file.name}</option>
-  ))}
-</select>
-<a>       </a>
-<button onClick={handleExportToLocal} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title="Export to Local">
-  <FaDownload style={{ marginRight: '8px' }} />
-</button>
+      <select
+        value={selectedFile ? selectedFile.name : ''}
+        onChange={handleSelectChange}
+        style={{ fontSize: '18px', padding: '10px', marginBottom: '20px', color: 'black', backgroundColor: '#61dafb', cursor: 'pointer' }}
+      >
+        <option value="">Select a file from Firebase</option>
+        {firebaseFiles.map(file => (
+          <option key={file.name} value={file.name}>{file.name}</option>
+        ))}
+      </select>
+      <a>       </a>
+      <button onClick={handleExportToLocal} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title="Export to Local">
+        <FaDownload style={{ marginRight: '8px' }} />
+      </button>
 
-<button onClick={handleExportToFirebase} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title="Export to Firebase">
-  <FaCloudUploadAlt style={{ marginRight: '8px' }} />
-</button>
+      <button onClick={handleExportToFirebase} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title="Export to Firebase">
+        <FaCloudUploadAlt style={{ marginRight: '8px' }} />
+      </button>
 
-<button onClick={toggleAnimation} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title={isAnimationPlaying ? "Pause Animation" : "Play Animation"}>
-  {isAnimationPlaying ? <FaPause style={{ marginRight: '8px' }} /> : <FaPlay style={{ marginRight: '8px' }} />}
-</button>
+      <button onClick={toggleAnimation} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title={isAnimationPlaying ? "Pause Animation" : "Play Animation"}>
+        {isAnimationPlaying ? <FaPause style={{ marginRight: '8px' }} /> : <FaPlay style={{ marginRight: '8px' }} />}
+      </button>
 
-      {/* Loading indicator */}
       {loading && <p style={{ color: 'white', fontSize: '18px' }}>Loading...</p>}
       <Canvas style={{ height: 'calc(100vh - 120px)', width: '100%', background: sceneProperties.backgroundColor }}>
         <Stats className='stats' />
