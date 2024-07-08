@@ -262,7 +262,7 @@ function App() {
       <button onClick={toggleAnimation} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}>
         {isAnimationPlaying ? 'Pause Animation' : 'Play Animation'}
       </button>
-      {loading && <p>Loading...</p>}
+      {loading && <p style={{ color:'white', fontSize:'18px' }}>Loading...</p>}
       <Canvas style={{ height: 'calc(100vh - 120px)', width: '100%', background: sceneProperties.backgroundColor }}>
         <Stats className='stats' />
         <OrbitControls autoRotate={sceneProperties.autoRotate} />
