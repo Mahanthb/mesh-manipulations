@@ -9,7 +9,6 @@ import { initializeApp } from 'firebase/app';
 import { getStorage, ref, listAll, getDownloadURL, uploadBytes } from 'firebase/storage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faPause, faDownload, faCloudUploadAlt, faUpload } from '@fortawesome/free-solid-svg-icons';
-import ReactTooltip from 'react-tooltip';
 import './App.css';
 
 const firebaseConfig = {
