@@ -45,16 +45,16 @@ input[type="file"] {
   font-size: 18px;
   padding: 10px;
   margin-bottom: 20px;
+  margin-right: 10px; /* Adjust this value as needed */
   border: none;
   border-radius: 5px;
   background-color: #61dafb;
   color: #282c34;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  float: left; /* Align icons to the left */
-  margin-right: 10px; /* Add some spacing between icons */
 }
 
+/* Add hover and active styles as before */
 button:hover,
 input[type="file"]:hover {
   background-color: #21a1f1;
@@ -73,12 +73,4 @@ input[type="file"]:disabled {
 
 canvas {
   display: block;
-}
-
-/* Add some padding and a max-width to center the UI elements */
-.container {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-  text-align: center;
 }
