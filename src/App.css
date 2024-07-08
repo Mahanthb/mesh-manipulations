@@ -1,3 +1,4 @@
+/* Reset some basic styles */
 * {
   box-sizing: border-box;
 }
@@ -39,7 +40,8 @@ body {
   bottom: 0 !important;
 }
 
-button, input[type="file"] {
+button,
+input[type="file"] {
   font-size: 18px;
   padding: 10px;
   margin-bottom: 20px;
@@ -49,17 +51,22 @@ button, input[type="file"] {
   color: #282c34;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  float: left; /* Align icons to the left */
+  margin-right: 10px; /* Add some spacing between icons */
 }
 
-button:hover, input[type="file"]:hover {
+button:hover,
+input[type="file"]:hover {
   background-color: #21a1f1;
 }
 
-button:active, input[type="file"]:active {
+button:active,
+input[type="file"]:active {
   background-color: #1e90ff;
 }
 
-button:disabled, input[type="file"]:disabled {
+button:disabled,
+input[type="file"]:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
@@ -68,6 +75,7 @@ canvas {
   display: block;
 }
 
+/* Add some padding and a max-width to center the UI elements */
 .container {
   padding: 20px;
   max-width: 800px;
