@@ -7,6 +7,9 @@ import * as dat from 'dat.gui';
 import { Raycaster, Vector2, AnimationMixer, Box3, Vector3 } from 'three';
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, listAll, getDownloadURL, uploadBytes } from 'firebase/storage';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlay, faPause, faDownload, faCloudUploadAlt, faUpload } from '@fortawesome/free-solid-svg-icons';
+import ReactTooltip from 'react-tooltip';
 import './App.css';
 
 const firebaseConfig = {
@@ -232,37 +235,44 @@ function App() {
       console.log('Model Dimensions:', dimensions);
     }
   };
-  
+
 
   return (
     <>
-      <input
-        type="file"
-        onChange={handleFileUpload}
-        style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}
-      />
+      <button onClick={handleFileUpload} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px', cursor: 'pointer' }} title="Upload File">
+        <FontAwesomeIcon icon={faUpload} style={{ marginRight: '8px' }} />
+      </button>
+
       <select
         value={selectedFile ? selectedFile.name : ''}
         onChange={handleSelectChange}
-        style={{ fontSize: '18px', padding: '10px', marginBottom: '20px', color: 'black', backgroundColor: '#61dafb', cursor:'pointer' }}
+        style={{ fontSize: '18px', padding: '10px', marginBottom: '20px', color: 'black', backgroundColor: '#61dafb', cursor: 'pointer' }}
       >
         <option value="">Select a file from Firebase</option>
         {firebaseFiles.map(file => (
           <option key={file.name} value={file.name}>{file.name}</option>
         ))}
       </select>
-      <br></br>
-      <button onClick={handleExportToLocal} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}>
-        Export to Local
+      <br />
+
+      {/* Button with icon for Export to Local */}
+      <button onClick={handleExportToLocal} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title="Export to Local">
+        <FontAwesomeIcon icon={faDownload} style={{ marginRight: '8px' }} />
       </button>
-      <button onClick={handleExportToFirebase} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}>
-        Export to Firebase
+
+      {/* Button with icon for Export to Firebase */}
+      <button onClick={handleExportToFirebase} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title="Export to Firebase">
+        <FontAwesomeIcon icon={faCloudUploadAlt} style={{ marginRight: '8px' }} />
       </button>
-      <br></br>
-      <button onClick={toggleAnimation} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}>
-        {isAnimationPlaying ? 'Pause Animation' : 'Play Animation'}
+
+      {/* Button with icon for Play/Pause Animation */}
+      <button onClick={toggleAnimation} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title={isAnimationPlaying ? "Pause Animation" : "Play Animation"}>
+        <FontAwesomeIcon icon={isAnimationPlaying ? faPause : faPlay} style={{ marginRight: '8px' }} />
       </button>
-      {loading && <p style={{ color:'white', fontSize:'18px' }}>Loading...</p>}
+
+
+      {/* Loading indicator */}
+      {loading && <p style={{ color: 'white', fontSize: '18px' }}>Loading...</p>}
       <Canvas style={{ height: 'calc(100vh - 120px)', width: '100%', background: sceneProperties.backgroundColor }}>
         <Stats className='stats' />
         <OrbitControls autoRotate={sceneProperties.autoRotate} />
@@ -455,12 +465,12 @@ function Scene({ model, animations, lightProperties, sceneProperties, isAnimatio
       positionFolder.add(selectedMesh.position, 'x', -50, 50).name('X');
       positionFolder.add(selectedMesh.position, 'y', -50, 50).name('Y');
       positionFolder.add(selectedMesh.position, 'z', -50, 50).name('Z');
-      
+
       const rotationFolder = meshFolder.addFolder('Rotation');
       rotationFolder.add(selectedMesh.rotation, 'x', -Math.PI, Math.PI).name('X');
       rotationFolder.add(selectedMesh.rotation, 'y', -Math.PI, Math.PI).name('Y');
       rotationFolder.add(selectedMesh.rotation, 'z', -Math.PI, Math.PI).name('Z');
-      
+
       const scaleFolder = meshFolder.addFolder('Scale');
       scaleFolder.add(selectedMesh.scale, 'x', 0.1, 10).name('X');
       scaleFolder.add(selectedMesh.scale, 'y', 0.1, 10).name('Y');
