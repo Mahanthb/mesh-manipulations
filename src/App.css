@@ -71,6 +71,21 @@ input[type="file"]:disabled {
   cursor: not-allowed;
 }
 
+/* App.css */
+.app-container {
+  display: flex;
+}
+
+.card {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+  width: 22%;
+  flex-shrink: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
 canvas {
-  display: block;
+  flex-grow: 1;
 }
