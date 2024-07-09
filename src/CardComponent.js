@@ -1,4 +1,3 @@
-// CardComponent.js
 import React from 'react';
 import { FaDownload, FaCloudUploadAlt, FaPlay, FaPause } from 'react-icons/fa';
 
@@ -18,13 +17,13 @@ const CardComponent = ({
       <input
         type="file"
         onChange={handleFileUpload}
-        style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }}
+        style={{ fontSize: '18px', padding: '10px', marginBottom: '20px', width: '100%' }}
       />
 
       <select
         value={selectedFile ? selectedFile.name : ''}
         onChange={handleSelectChange}
-        style={{ fontSize: '18px', padding: '10px', marginBottom: '20px', color: 'black', backgroundColor: '#61dafb', cursor: 'pointer' }}
+        style={{ fontSize: '18px', padding: '10px', marginBottom: '20px', width: '100%', color: 'black', backgroundColor: '#61dafb', cursor: 'pointer' }}
       >
         <option value="">Select a file from Firebase</option>
         {firebaseFiles.map(file => (
@@ -32,7 +31,8 @@ const CardComponent = ({
         ))}
       </select>
 
-        <br></br>
+      <br />
+
       <button onClick={handleExportToLocal} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title="Export to Local">
         <FaDownload style={{ marginRight: '8px' }} />
       </button>
