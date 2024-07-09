@@ -1,4 +1,4 @@
-/* Reset some basic styles */
+@import-normalize;
 * {
   box-sizing: border-box;
 }
