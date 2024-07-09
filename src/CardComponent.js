@@ -14,6 +14,7 @@ const CardComponent = ({
 }) => {
   return (
     <div className="card">
+        <h2>Import</h2>
       <input
         type="file"
         onChange={handleFileUpload}
@@ -32,6 +33,7 @@ const CardComponent = ({
       </select>
 
       <br />
+      <h2>Export</h2>
 
       <button onClick={handleExportToLocal} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title="Export to Local">
         <FaDownload style={{ marginRight: '8px' }} />
@@ -40,6 +42,8 @@ const CardComponent = ({
       <button onClick={handleExportToFirebase} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title="Export to Firebase">
         <FaCloudUploadAlt style={{ marginRight: '8px' }} />
       </button>
+      <br></br>
+      <h2>Animations</h2>
 
       <button onClick={toggleAnimation} style={{ fontSize: '18px', padding: '10px', marginBottom: '20px' }} title={isAnimationPlaying ? "Pause Animation" : "Play Animation"}>
         {isAnimationPlaying ? <FaPause style={{ marginRight: '8px' }} /> : <FaPlay style={{ marginRight: '8px' }} />}
