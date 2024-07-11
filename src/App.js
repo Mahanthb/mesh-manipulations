@@ -3,7 +3,7 @@ import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { Stats, OrbitControls } from '@react-three/drei';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter';
-import * as dat from 'dat.gui';
+import GUI from 'lil-gui';
 import { Raycaster, Vector2, AnimationMixer, Box3, Vector3 } from 'three';
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, listAll, getDownloadURL, uploadBytes } from 'firebase/storage';
@@ -48,7 +48,7 @@ function App() {
   const guiRef = useRef(null);
 
   useEffect(() => {
-    const gui = new dat.GUI();
+    const gui = new GUI();
 
     const lightFolder = gui.addFolder('Light Properties');
     lightFolder.add(lightProperties, 'type', ['ambientLight', 'directionalLight', 'pointLight', 'spotLight']).name('Type').onChange((value) => {
@@ -111,8 +111,9 @@ function App() {
       printMeshHierarchy(model, meshFolder);
     }
 
-    lightFolder.close();
+    positionFolder.close();
     sceneFolder.close();
+    dimensionsFolder.close();
     meshFolder.close();
 
     guiRef.current = gui;
@@ -407,7 +408,7 @@ function Scene({ model, animations, lightProperties, sceneProperties, isAnimatio
       guiRef.current.destroy();
     }
 
-    guiRef.current = new dat.GUI();
+    guiRef.current = new GUI();
 
     if (mesh.geometry) {
       const geometry = mesh.geometry;
@@ -497,4 +498,4 @@ function Scene({ model, animations, lightProperties, sceneProperties, isAnimatio
 }
 
 
-export default App; 
+export default App;
