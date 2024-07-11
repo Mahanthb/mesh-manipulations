@@ -49,7 +49,7 @@ const CardComponent = ({
         {isAnimationPlaying ? <FaPause style={{ marginRight: '8px' }} /> : <FaPlay style={{ marginRight: '8px' }} />}
       </button>
 
-      {loading && <p style={{ color: 'white', fontSize: '18px' }}>Loading...</p>}
+      {loading && <p style={{ color: 'black', fontSize: '18px' }}>Loading...</p>}
     </div>
   );
 };
