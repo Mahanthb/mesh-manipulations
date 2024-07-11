@@ -1,4 +1,4 @@
-@import-normalize;
+/* Reset some basic styles */
 * {
   box-sizing: border-box;
 }
@@ -28,9 +28,9 @@ body {
   overflow: hidden;
   overscroll-behavior-y: none;
   font-family: 'Roboto', sans-serif;
-  color: black;
+  color: #333;
   -webkit-font-smoothing: antialiased;
-  background: #282c34;
+  background: #f0f0f0; /* Lighter background */
 }
 
 .stats {
@@ -42,27 +42,27 @@ body {
 
 button,
 input[type="file"] {
-  font-size: 18px;
-  padding: 10px;
+  font-size: 16px; /* Slightly smaller */
+  padding: 12px 20px; /* More padding */
   margin-bottom: 20px;
   margin-right: 10px; /* Adjust this value as needed */
   border: none;
-  border-radius: 5px;
-  background-color: #61dafb;
-  color: #282c34;
+  border-radius: 8px; /* Rounded corners */
+  background-color: #007bff; /* Blue primary color */
+  color: white; /* White text */
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-/* Add hover and active styles as before */
+/* Hover and active states */
 button:hover,
 input[type="file"]:hover {
-  background-color: #21a1f1;
+  background-color: #0056b3; /* Darker blue on hover */
 }
 
 button:active,
 input[type="file"]:active {
-  background-color: #1e90ff;
+  background-color: #004d99; /* Even darker blue on click */
 }
 
 button:disabled,
@@ -71,19 +71,20 @@ input[type="file"]:disabled {
   cursor: not-allowed;
 }
 
-/* App.css */
+/* Card styling */
 .app-container {
   display: flex;
 }
 
 .card {
-  background-color: #282c34;
+  background-color: 'grey'; /* White background */
   padding: 20px;
-  color: white;
+  color: #333; /* Dark text */
   width: 22%;
   flex-shrink: 0;
   height: 100vh;
   overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
 }
 
 canvas {
