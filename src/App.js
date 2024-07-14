@@ -26,6 +26,7 @@ const storage = getStorage(app);
 function App() {
   const [model, setModel] = useState(null);
   const [animations, setAnimations] = useState(null);
+  const [selectedAnimation, setSelectedAnimation] = useState(null);
   const [lightProperties, setLightProperties] = useState({
     type: 'ambientLight',
     color: '#ffffff',
@@ -111,10 +112,17 @@ function App() {
       printMeshHierarchy(model, meshFolder);
     }
 
+    const animationFolder = gui.addFolder('Animation Controls');
+    animationFolder.add({ addKeyframe }, 'addKeyframe').name('Add Keyframe');
+    animationFolder.add({ removeKeyframe }, 'removeKeyframe').name('Remove Keyframe');
+    animationFolder.add({ playAnimation }, 'playAnimation').name('Play');
+    animationFolder.add({ pauseAnimation }, 'pauseAnimation').name('Pause');
+
     positionFolder.close();
     sceneFolder.close();
     dimensionsFolder.close();
     meshFolder.close();
+    animationFolder.close();
 
     guiRef.current = gui;
 
@@ -129,10 +137,10 @@ function App() {
     loader.load(URL.createObjectURL(file), (gltf) => {
       setModel(gltf.scene);
       setAnimations(gltf.animations);
+      setSelectedAnimation(gltf.animations[0]?.name || null);
       updateModelDimensions(gltf.scene);
     });
   };
-
   const handleFirebaseFileUpload = async (url) => {
     setLoading(true);
     const loader = new GLTFLoader();
@@ -141,6 +149,7 @@ function App() {
       (gltf) => {
         setModel(gltf.scene);
         setAnimations(gltf.animations);
+        setSelectedAnimation(gltf.animations[0]?.name || null);
         updateModelDimensions(gltf.scene);
         setLoading(false);
       },
@@ -196,16 +205,41 @@ function App() {
             fileName = 'model'; // Default filename if user cancels prompt
           }
 
-          fileName += '.gltf'; // Ensure the filename ends with .gltf
+          fileName += '.gltf';
+          const fileRef = ref(storage, fileName);
 
-          const storageRef = ref(storage, fileName);
-          await uploadBytes(storageRef, blob);
-          alert(`Model "${fileName}" uploaded to Firebase successfully!`);
+          try {
+            await uploadBytes(fileRef, blob);
+            const url = await getDownloadURL(fileRef);
+            alert(`File uploaded successfully: ${url}`);
+            loadFirebaseFiles(); // Refresh the file list after upload
+          } catch (error) {
+            console.error('An error occurred during upload:', error);
+            alert('Upload failed. Please try again.');
+          }
         },
         { binary: false }
       );
     }
   };
+
+  const playAnimation = () => {
+    setIsAnimationPlaying(true);
+  };
+
+  const pauseAnimation = () => {
+    setIsAnimationPlaying(false);
+  };
+
+
+  const addKeyframe = () => {
+    // Add keyframe logic
+  };
+
+  const removeKeyframe = () => {
+    // Remove keyframe logic
+  };
+
 
   useEffect(() => {
     loadFirebaseFiles();
@@ -215,6 +249,10 @@ function App() {
     const selectedFile = firebaseFiles.find(file => file.name === event.target.value);
     setSelectedFile(selectedFile.url);
     handleFirebaseFileUpload(selectedFile.url);
+  };
+
+  const handleAnimationSelect = (event) => {
+    setSelectedAnimation(event.target.value);
   };
 
   const toggleAnimation = () => {
@@ -248,6 +286,9 @@ function App() {
         toggleAnimation={toggleAnimation}
         isAnimationPlaying={isAnimationPlaying}
         loading={loading}
+        animations={animations}
+        handleAnimationSelect={handleAnimationSelect}
+        selectedAnimation={selectedAnimation}
       />
 
       <Canvas style={{ height: 'calc(100vh - 120px)', width: '100%', background: sceneProperties.backgroundColor }}>
@@ -262,6 +303,7 @@ function App() {
           lightProperties={lightProperties}
           sceneProperties={sceneProperties}
           isAnimationPlaying={isAnimationPlaying}
+          selectedAnimation={selectedAnimation}
         />
       </Canvas>
     </div>
@@ -332,31 +374,31 @@ function HoverHighlight({ setHoveredObject, setSelectedObject }) {
   return null;
 }
 
-function Scene({ model, animations, lightProperties, sceneProperties, isAnimationPlaying }) {
-  const { scene, camera, gl } = useThree();
+function Scene({ model, animations, lightProperties, sceneProperties, isAnimationPlaying, selectedAnimation }) {
+  const { scene, camera } = useThree();
   const [selectedMesh, setSelectedMesh] = useState(null);
   const [hoveredMesh, setHoveredMesh] = useState(null);
   const guiRef = useRef(null);
-  const mixer = useRef(null);
+  const mixerRef = useRef(new AnimationMixer(null));
   const [activeAction, setActiveAction] = useState(null);
 
   useEffect(() => {
     if (model) {
       scene.add(model);
       if (animations && animations.length > 0) {
-        mixer.current = new AnimationMixer(model);
-        const action = mixer.current.clipAction(animations[0]);
-        action.play();
-        setActiveAction(action);
+        mixerRef.current = new AnimationMixer(model);
+        const initialAction = mixerRef.current.clipAction(animations[0]);
+        initialAction.play();
+        setActiveAction(initialAction);
       }
     }
     return () => {
       if (model) {
         scene.remove(model);
       }
-      if (mixer.current) {
-        mixer.current.stopAllAction();
-        mixer.current = null;
+      if (mixerRef.current) {
+        mixerRef.current.stopAllAction();
+        mixerRef.current = null;
         setActiveAction(null);
       }
     };
@@ -378,14 +420,12 @@ function Scene({ model, animations, lightProperties, sceneProperties, isAnimatio
     }
   }, [model, sceneProperties.wireframe]);
 
-  // Adjust camera position to fit model in the viewport
   useEffect(() => {
     if (model) {
       const box = new Box3().setFromObject(model);
       const size = box.getSize(new Vector3()).length();
       const center = box.getCenter(new Vector3());
 
-      // Set camera position based on bounding box and size of the model
       const cameraOffset = 1.5;
       const cameraPosition = new Vector3().copy(center);
       cameraPosition.x += size / 2.0;
@@ -397,9 +437,20 @@ function Scene({ model, animations, lightProperties, sceneProperties, isAnimatio
     }
   }, [model, camera]);
 
+  useEffect(() => {
+    if (mixerRef.current && animations) {
+      mixerRef.current.stopAllAction();
+      if (selectedAnimation) {
+        const action = mixerRef.current.clipAction(animations.find((clip) => clip.name === selectedAnimation));
+        action.reset().play();
+        setActiveAction(action);
+      }
+    }
+  }, [selectedAnimation, animations]);
+
   useFrame((state, delta) => {
-    if (mixer.current && isAnimationPlaying) {
-      mixer.current.update(delta);
+    if (mixerRef.current && isAnimationPlaying) {
+      mixerRef.current.update(delta);
     }
   });
 
@@ -435,23 +486,23 @@ function Scene({ model, animations, lightProperties, sceneProperties, isAnimatio
       meshFolder.add(mesh.material, 'opacity', 0, 1).name('Opacity').onChange((value) => {
         mesh.material.transparent = value < 1;
         mesh.material.opacity = value;
-        mesh.material.depthWrite = value >= 1; // Disable depth write for transparent objects
+        mesh.material.depthWrite = value >= 1;
       });
 
       const positionFolder = meshFolder.addFolder('Position');
-      positionFolder.add(selectedMesh.position, 'x', -50, 50).name('X');
-      positionFolder.add(selectedMesh.position, 'y', -50, 50).name('Y');
-      positionFolder.add(selectedMesh.position, 'z', -50, 50).name('Z');
+      positionFolder.add(mesh.position, 'x', -50, 50).name('X');
+      positionFolder.add(mesh.position, 'y', -50, 50).name('Y');
+      positionFolder.add(mesh.position, 'z', -50, 50).name('Z');
 
       const rotationFolder = meshFolder.addFolder('Rotation');
-      rotationFolder.add(selectedMesh.rotation, 'x', -Math.PI, Math.PI).name('X');
-      rotationFolder.add(selectedMesh.rotation, 'y', -Math.PI, Math.PI).name('Y');
-      rotationFolder.add(selectedMesh.rotation, 'z', -Math.PI, Math.PI).name('Z');
+      rotationFolder.add(mesh.rotation, 'x', -Math.PI, Math.PI).name('X');
+      rotationFolder.add(mesh.rotation, 'y', -Math.PI, Math.PI).name('Y');
+      rotationFolder.add(mesh.rotation, 'z', -Math.PI, Math.PI).name('Z');
 
       const scaleFolder = meshFolder.addFolder('Scale');
-      scaleFolder.add(selectedMesh.scale, 'x', 0.1, 10).name('X');
-      scaleFolder.add(selectedMesh.scale, 'y', 0.1, 10).name('Y');
-      scaleFolder.add(selectedMesh.scale, 'z', 0.1, 10).name('Z');
+      scaleFolder.add(mesh.scale, 'x', 0.1, 10).name('X');
+      scaleFolder.add(mesh.scale, 'y', 0.1, 10).name('Y');
+      scaleFolder.add(mesh.scale, 'z', 0.1, 10).name('Z');
 
       const infoFolder = meshFolder.addFolder('Mesh Info');
       infoFolder.add({ Vertices: vertexCount }, 'Vertices').name('Vertices').listen();
@@ -461,6 +512,7 @@ function Scene({ model, animations, lightProperties, sceneProperties, isAnimatio
       meshFolder.open();
     }
   };
+
 
 
   return (
